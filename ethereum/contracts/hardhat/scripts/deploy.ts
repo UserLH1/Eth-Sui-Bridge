@@ -3,9 +3,12 @@ import { ethers } from "hardhat";
 async function main() {
   const IBT = await ethers.getContractFactory("IBT");
   const ibt = await IBT.deploy();
-  await ibt.deployed();
+  // așteptăm confirmarea deploy-ului
+  await ibt.waitForDeployment();
 
-  console.log("IBT deployed to:", ibt.address);
+  // Adresa contractului
+  const contractAddress = await ibt.getAddress();
+  console.log("IBT deployed to:", contractAddress);
 }
 
 main().catch((error) => {
