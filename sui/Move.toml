@@ -1,0 +1,9 @@
+[package]
+name = "ibt"
+version = "0.0.1"
+
+[dependencies]
+Sui = "0.29.0"  # sau versiunea la zi
+
+[dev-dependencies]
+# aici pui alte pachete, dacă e cazul
