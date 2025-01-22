@@ -2,8 +2,11 @@
   "type": "module",
   "dependencies": {
     "@mysten/sui.js": "^0.54.1",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.7",
-    "ethers": "^6.13.5"
+    "ethers": "^6.13.5",
+    "express": "^4.21.2",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.7"

@@ -20,7 +20,7 @@ Thumbs.db
 *.iml
 
 # Compiled files
-dist/
+
 build/
 
 # Cache and temporary files

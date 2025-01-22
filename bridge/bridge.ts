@@ -1,6 +1,6 @@
-import dotenv from "dotenv";
+import * as dotenv from "dotenv";
 import { ethers } from "ethers";
-import { WebsocketClient } from "./node_modules/@mysten/sui.js/src/client/rpc-websocket-client"; // Clientul WebSocket
+import { WebsocketClient } from "./sui-websocket"; // Importă direct fișierul TypeScript
 
 dotenv.config();
 
@@ -9,7 +9,7 @@ const ethereumProvider = new ethers.JsonRpcProvider(
   process.env.ETHEREUM_RPC_URL
 );
 const ethereumWallet = new ethers.Wallet(
-  process.env.ETHEREUM_PRIVATE_KEY,
+  process.env.ETHEREUM_PRIVATE_KEY!,
   ethereumProvider
 );
 const IBT_ABI = [
@@ -17,13 +17,13 @@ const IBT_ABI = [
   "function mint(address to, uint256 amount) public",
 ];
 const ibtEthereumContract = new ethers.Contract(
-  process.env.ETHEREUM_CONTRACT_ADDRESS, // Adresa contractului Ethereum
+  process.env.ETHEREUM_CONTRACT_ADDRESS!, // Adresa contractului Ethereum
   IBT_ABI,
   ethereumWallet
 );
 
 // Configurare Sui WebSocket Client
-const suiWebsocket = new WebsocketClient(process.env.SUI_RPC_URL, {
+const suiWebsocket = new WebsocketClient(process.env.SUI_RPC_URL!, {
   callTimeout: 30000,
   reconnectTimeout: 3000,
   maxReconnects: 5,
@@ -42,17 +42,16 @@ async function listenForSuiEvents() {
         },
       },
     ],
-    onMessage: async (event) => {
+    onMessage: async (event: {
+      params: { result: { from_addr: string; amount: string } };
+    }) => {
       console.log("Received Burn event on Sui:", event);
       const { from_addr, amount } = event.params.result;
 
       console.log(
         `Minting ${amount} IBT on Ethereum for address ${from_addr}...`
       );
-      const tx = await ibtEthereumContract.mint(
-        from_addr,
-        ethers.BigNumber.from(amount)
-      );
+      const tx = await ibtEthereumContract.mint(from_addr, amount);
       await tx.wait();
       console.log("Minted on Ethereum:", tx.hash);
     },
