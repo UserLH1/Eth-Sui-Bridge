@@ -1,24 +1,17 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.18;
-
+pragma solidity ^0.7.6;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-
-/**
- * @title IBT
- * @dev ERC20 Token cu mint și burn restricționate doar la owner.
- */
-contract IBT is ERC20, Ownable(msg.sender) {
-    constructor() ERC20("IBT", "IBT") {
-        // Optional: poți face un mint inițial către owner, dacă vrei
-        // _mint(msg.sender, 1000 * 10**decimals());
+contract IBT is ERC20 {
+    address public owner;
+    constructor() ERC20("InterBlockchain Token", "IBT") {
+        owner = msg.sender;
     }
-
-    function mint(address to, uint256 amount) external onlyOwner {
+    function mint(address to, uint256 amount) external {
+        require(msg.sender == owner, "Only owner can mint");
         _mint(to, amount);
     }
-
-    function burn(address from, uint256 amount) external onlyOwner {
-        _burn(from, amount);
+    function burn(uint256 amount) external {
+        require(msg.sender == owner, "Only owner can burn");
+        _burn(msg.sender, amount);
     }
 }
