@@ -7,4 +7,4 @@ export const IBT_ABI = [
 ] as const;
 
 export const SUI_PACKAGE_ID = "0xYOUR_SUI_PACKAGE_ID"; // ID-ul pachetului Sui
-export const ETH_CONTRACT_ADDRESS = "0xYOUR_ETHEREUM_CONTRACT_ADDRESS";
+export const ETH_CONTRACT_ADDRESS = "0xhahahahah";

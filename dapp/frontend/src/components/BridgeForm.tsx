@@ -1,28 +1,28 @@
+import { useBridge } from "@/context/BridgeContext";
+import { useEthereum } from "@/hooks/useEthereum";
+import { useSuiWallet } from "@/hooks/useSuiWallet";
 import { useState } from "react";
 import "../App.css";
 function BridgeForm() {
   const [amount, setAmount] = useState("");
+  const { ethToSui, suiToEth } = useBridge();
+  const { isConnected: isEthConnected } = useEthereum();
+  const { isConnected: isSuiConnected } = useSuiWallet();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleBridgeToSui = async () => {
-    setIsLoading(true);
+  const handleSubmit = async (direction: "eth-sui" | "sui-eth") => {
     try {
-      // Aici logica pentru bridge
-      console.log(`Bridging ${amount} ETH to SUI`);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleBridgeToEth = async () => {
-    setIsLoading(true);
-    try {
-      // Aici logica pentru bridge invers
-      console.log(`Bridging ${amount} SUI to ETH`);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    } finally {
-      setIsLoading(false);
+      if (direction === "eth-sui") {
+        await ethToSui(amount);
+      } else {
+        await suiToEth(amount);
+      }
+      alert("Transaction submitted successfully!");
+    } catch (error) {
+      console.error("Bridge error:", error);
+      alert(
+        `Error: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
     }
   };
 
@@ -39,7 +39,7 @@ function BridgeForm() {
       <div className="button-group">
         <button
           className="bridge-button"
-          onClick={handleBridgeToSui}
+          onClick={() => handleSubmit("eth-sui")}
           disabled={isLoading || !amount}
         >
           ETH → SUI
@@ -47,7 +47,7 @@ function BridgeForm() {
 
         <button
           className="bridge-button"
-          onClick={handleBridgeToEth}
+          onClick={() => handleSubmit("sui-eth")}
           disabled={isLoading || !amount}
         >
           SUI → ETH

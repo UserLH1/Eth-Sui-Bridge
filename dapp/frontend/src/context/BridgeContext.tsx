@@ -1,40 +1,92 @@
-import { ethers } from "ethers";
-import { createContext, useContext } from "react";
-import { IBT_ABI } from "../lib/contracts";
+import { createContext, useContext, useEffect, useState } from "react";
+import { CrossChainBridge } from "../../../../bridge/src/bridge";
+import { bridgeConfig } from "../config";
 
 type BridgeContextType = {
-  bridgeToSui: (amount: string) => Promise<void>;
-  bridgeToEth: (amount: string) => Promise<void>;
+  bridge?: CrossChainBridge;
+  isBridgeReady: boolean;
+  bridgeError?: string;
+  ethToSui: (amount: string) => Promise<void>;
+  suiToEth: (amount: string) => Promise<void>;
 };
 
-const BridgeContext = createContext<BridgeContextType>(null!);
-
-export function useBridge() {
-  return useContext(BridgeContext);
-}
+const BridgeContext = createContext<BridgeContextType>({} as BridgeContextType);
 
 export function BridgeProvider({ children }: { children: React.ReactNode }) {
-  const bridgeToSui = async (amount: string) => {
-    const provider = new ethers.BrowserProvider(window.ethereum!);
-    const signer = await provider.getSigner();
-    const contract = new ethers.Contract(
-      import.meta.env.VITE_ETH_CONTRACT_ADDRESS,
-      IBT_ABI,
-      signer
-    );
+  const [bridge, setBridge] = useState<CrossChainBridge>();
+  const [isBridgeReady, setIsBridgeReady] = useState(false);
+  const [bridgeError, setBridgeError] = useState<string>();
 
-    const tx = await contract.burn(amount);
-    await tx.wait();
-    // Aici apelezi backend-ul (bridge.ts) pentru mint pe Sui
+  // Inițializare bridge
+  useEffect(() => {
+    const initBridge = async () => {
+      try {
+        const bridgeInstance = new CrossChainBridge(bridgeConfig);
+        await bridgeInstance.start();
+        setBridge(bridgeInstance);
+        setIsBridgeReady(true);
+        setBridgeError(undefined);
+      } catch (error) {
+        console.error("Failed to initialize bridge:", error);
+        setBridgeError(
+          "Failed to initialize bridge. Please check your configuration."
+        );
+        setIsBridgeReady(false);
+      }
+    };
+
+    initBridge();
+
+    return () => {
+      bridge?.stop();
+    };
+  }, []);
+
+  // Funcție pentru transfer ETH → SUI
+  const ethToSui = async (amount: string) => {
+    if (!bridge || !isBridgeReady) {
+      throw new Error("Bridge is not ready");
+    }
+
+    try {
+      console.log(`Initiating ETH → SUI transfer: ${amount} ITB`);
+      // Implementează logica de burn pe Ethereum
+      // Apoi declanșează mint pe Sui
+    } catch (error) {
+      console.error("ETH → SUI transfer failed:", error);
+      throw error;
+    }
   };
 
-  const bridgeToEth = async (amount: string) => {
-    // Implementare similară pentru Sui
+  // Funcție pentru transfer SUI → ETH
+  const suiToEth = async (amount: string) => {
+    if (!bridge || !isBridgeReady) {
+      throw new Error("Bridge is not ready");
+    }
+
+    try {
+      console.log(`Initiating SUI → ETH transfer: ${amount} ITB`);
+      // Implementează logica de burn pe Sui
+      // Apoi declanșează mint pe Ethereum
+    } catch (error) {
+      console.error("SUI → ETH transfer failed:", error);
+      throw error;
+    }
   };
 
   return (
-    <BridgeContext.Provider value={{ bridgeToSui, bridgeToEth }}>
+    <BridgeContext.Provider
+      value={{
+        bridge,
+        isBridgeReady,
+        bridgeError,
+        ethToSui,
+        suiToEth,
+      }}
+    >
       {children}
     </BridgeContext.Provider>
   );
 }
+
+export const useBridge = () => useContext(BridgeContext);

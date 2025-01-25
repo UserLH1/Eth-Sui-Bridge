@@ -6,5 +6,5 @@
     "outDir": "./dist",
     "strict": true
   },
-  "include": ["*.ts", "bridge.js"]
+  "include": ["*.ts", "bridge.js", "src/ethereum.ts", "src/bridge.ts", "src/sui.ts", "src/types.ts"]
 }
